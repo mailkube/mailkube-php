@@ -16,8 +16,8 @@ thresholds and how to satisfy each gate locally *before* pushing.
 | **Formatting** | PSR-12 clean | `php-cs-fixer fix --dry-run` (the `test` CI job) |
 
 > **Coverage is line only.** PHPUnit/pcov report covered-vs-total statements but no reliable branch
-> metric, so this is a documented deviation from the python/node templates (which gate line **and**
-> branch at 90%). Keep tests exercising every meaningful path anyway — the number is a floor.
+> metric, so there is nothing further to gate on. Keep tests exercising every meaningful path
+> anyway — the number is a floor.
 
 ## Run the gates locally
 

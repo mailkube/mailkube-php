@@ -13,7 +13,7 @@ Packagist as `mailkube/mailkube-php`. Load the relevant rule file from `.rules/`
 | Rule File | Load When |
 |---|---|
 | `.rules/SOLID_DRY_KISS.md` | Writing or changing any code — the enforced engineering standards (SOLID, DRY, KISS, coverage, docs) and how to run each gate locally. |
-| `.rules/SDK_CONTRACT.md` | Adding a resource, verb, response model, paginated listing, or webhook event: the cross-SDK decisions (config, layering, naming, errors, pagination, webhooks) every mailkube SDK implements identically. Editing it changes what every SDK promises; mirror the change into the siblings by hand. |
+| `.rules/SDK_CONTRACT.md` | Adding a resource, verb, response model, paginated listing, or webhook event: the cross-SDK decisions (config, layering, naming, errors, pagination, webhooks) every mailkube SDK implements identically. Shared verbatim across every SDK; changes are made centrally. |
 | `.rules/SDK_DESIGN.md` | The same tasks, for the **PHP realization**: the layer-to-file map, the PSR-18 injection seam, named-argument verbs, and the `@phpstan-param` convention. |
 | `.rules/RELEASE.md` | Touching `release.yml`, `.releaserc.json`, versioning, or Packagist publishing. |
 
