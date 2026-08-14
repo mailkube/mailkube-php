@@ -1,0 +1,11 @@
+# Strict-typing + SOLID static analysis gate (#5/#6). Level max is the strictest ruleset.
+includes:
+    - vendor/phpstan/phpstan-strict-rules/rules.neon
+    - vendor/phpstan/phpstan-phpunit/extension.neon
+    - vendor/phpstan/phpstan-phpunit/rules.neon
+
+parameters:
+    level: max
+    paths:
+        - src
+        - tests

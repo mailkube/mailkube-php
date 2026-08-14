@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call: # so release.yml can gate on the full CI
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ["8.3", "8.4"]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          coverage: pcov
+          tools: composer:v2
+
+      # Publish-readiness: catches a manifest that Packagist would reject, before a tag exists.
+      # Deliberately NOT `--no-check-publish`, which suppresses exactly those checks.
+      - name: Manifest validation (composer validate)
+        run: composer validate --strict
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Format check (php-cs-fixer)
+        run: vendor/bin/php-cs-fixer fix --dry-run --diff
+
+      - name: Docs + type hints (phpcs)
+        run: vendor/bin/phpcs
+
+      - name: Static analysis (phpstan, level max)
+        # Level max on a parallel worker can exceed PHP CLI defaults; pin it rather than
+        # depending on the runner image.
+        run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+
+      - name: Complexity + design (phpmd)
+        run: vendor/bin/phpmd src text phpmd.xml
+
+      - name: Tests + coverage
+        run: vendor/bin/phpunit --coverage-clover=coverage.clover
+
+      - name: Coverage gate (90% line)
+        run: ./scripts/check-coverage.sh coverage.clover
+
+  deps-floor:
+    # The `^` constraints in composer.json are a promise to consumers: this job is what makes them
+    # true. `composer install` resolves the NEWEST matching versions, so without this the declared
+    # lower bounds are never executed by anything.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3" # the declared floor
+          coverage: none
+          tools: composer:v2
+
+      - name: Install the lowest allowed dependencies
+        run: composer update --prefer-lowest --prefer-stable --no-interaction --no-progress
+
+      - name: Tests
+        run: vendor/bin/phpunit
+
+  dry:
+    # Language-agnostic duplication (DRY) gate — identical across every mailkube repo.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "20"
+      - name: Copy-paste detection (jscpd)
+        run: npx --yes jscpd@4 --config .jscpd.json .
+
+  docs:
+    # Governance gate: every .rules/*.md must be indexed in AGENTS.md.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Rule-index sync check
+        run: ./scripts/check-rule-index.sh

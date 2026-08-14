@@ -1,0 +1,61 @@
+{
+  "name": "mailkube/mailkube-php",
+  "description": "The official PHP SDK for mailkube",
+  "type": "library",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/mailkube/mailkube-php",
+  "keywords": ["mailkube", "email", "sdk"],
+  "require": {
+    "php": ">=8.3",
+    "psr/http-client": "^1.0",
+    "psr/http-factory": "^1.0",
+    "psr/http-message": "^2.0",
+    "psr/log": "^3.0",
+    "php-http/discovery": "^1.19"
+  },
+  "suggest": {
+    "guzzlehttp/guzzle": "A PSR-18 client, discovered automatically; the SDK applies its timeout to it",
+    "symfony/http-client": "A PSR-18 client, discovered automatically; the SDK applies its timeout to it",
+    "nyholm/psr7": "PSR-7/PSR-17 message and factory implementation, discovered automatically"
+  },
+  "require-dev": {
+    "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+    "friendsofphp/php-cs-fixer": "^3.64",
+    "guzzlehttp/guzzle": "^7.9",
+    "nyholm/psr7": "^1.8",
+    "php-http/mock-client": "^1.6",
+    "phpmd/phpmd": "^2.15",
+    "phpstan/phpstan": "^2.0",
+    "phpstan/phpstan-phpunit": "^2.0",
+    "phpstan/phpstan-strict-rules": "^2.0",
+    "phpunit/phpunit": "^11.0",
+    "slevomat/coding-standard": "^8.15",
+    "squizlabs/php_codesniffer": "^3.10",
+    "symfony/http-client": "^7.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "Mailkube\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Mailkube\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "format": "php-cs-fixer fix",
+    "format:check": "php-cs-fixer fix --dry-run --diff",
+    "cs": "phpcs",
+    "analyse": "phpstan analyse",
+    "mess": "phpmd src text phpmd.xml",
+    "test": "phpunit"
+  },
+  "config": {
+    "sort-packages": true,
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "php-http/discovery": true
+    }
+  }
+}

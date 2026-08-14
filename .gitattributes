@@ -1,0 +1,30 @@
+# Keep the published Composer dist tarball to what a consumer actually runs.
+#
+# Everything below is development apparatus: it belongs in the repository and in CI, never in
+# `vendor/mailkube/mailkube-php` on a consumer's disk. What survives is `src/`, `composer.json`,
+# `README.md`, `LICENSE` and `NOTICE` — plus `CODE_OF_CONDUCT.md` and `SECURITY.md`, which are
+# deliberately kept so the security contact travels with the package.
+#
+# Verify after changing this file: `composer archive --format=tar && tar tf mailkube-*.tar`.
+
+/tests                     export-ignore
+/examples                  export-ignore
+/scripts                   export-ignore
+/.github                   export-ignore
+/.rules                    export-ignore
+
+/phpstan.neon              export-ignore
+/phpcs.xml                 export-ignore
+/phpmd.xml                 export-ignore
+/phpunit.xml.dist          export-ignore
+/.php-cs-fixer.dist.php    export-ignore
+/.jscpd.json               export-ignore
+/.pre-commit-config.yaml   export-ignore
+/.releaserc.json           export-ignore
+/commitlint.config.js      export-ignore
+/.editorconfig             export-ignore
+/.gitignore                export-ignore
+/.gitattributes            export-ignore
+
+/AGENTS.md                 export-ignore
+/CONTRIBUTING.md           export-ignore
