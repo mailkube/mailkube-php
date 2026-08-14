@@ -3,9 +3,11 @@
 Load this when adding a **resource, verb, response model, paginated listing, or webhook event**,
 or when wiring a framework integration to the mailkube API.
 
-This file is **language-neutral and shared**. It lives in `common/.rules/` in the `repo-template`
-repo and is synced verbatim into every SDK, so all of them describe one API the same way. Do not
-edit a synced copy: edit `common/.rules/SDK_CONTRACT.md` in `repo-template` and run `make sync`.
+This file is **language-neutral and shared in intent**: every mailkube SDK implements what follows
+identically, so a caller who learns one knows them all. There is no automated sync and no canonical
+upstream copy, so keeping the SDKs aligned is a manual discipline. A change here is a change to the
+cross-SDK contract: mirror it into the sibling SDKs (`mailkube-python`, `-node`, `-go`, `-ruby`) in
+the same effort, or the guarantee above quietly stops being true.
 
 The *structure* below must survive translation into any language. Where a language genuinely
 demands a different shape (no keyword arguments, no structural typing, no async), the deviation is
