@@ -6,6 +6,7 @@ namespace Mailkube\Tests;
 
 use Mailkube\Exception\MailkubeException;
 use Mailkube\Internal\Config;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 
 /**
@@ -60,13 +61,39 @@ final class ConfigTest extends BaseTestCase
         self::assertSame('mailkube-php/' . Config::version(), $agent);
     }
 
-    public function testTheReportedVersionCarriesNoTagPrefix(): void
+    public function testTheReportedVersionIsNeverAPrefixedOrDerivedString(): void
     {
-        // Releases are tagged `vX.Y.Z` and Composer records the tag's pretty form verbatim, so
-        // without the strip in Config::version() this reads `mailkube-php/v1.0.0` on every
-        // released install. Asserting against Config::version() alone cannot catch that.
+        // Whatever the checkout, what reaches the wire looks like a version. Asserting against
+        // Config::version() alone cannot catch a `v` prefix, so assert the shape.
         self::assertMatchesRegularExpression('/^\d/', Config::version());
         self::assertStringNotContainsString('/v', (new Config('mk_test'))->defaultHeaders()['User-Agent']);
+    }
+
+    /**
+     * Every pretty version Composer can hand us, and what the User-Agent must report for it.
+     *
+     * The ambient assertions above cannot cover this: the suite only ever runs from one kind of
+     * checkout, so the case that actually shipped broken is the one it never reaches.
+     *
+     * @phpstan-return array<string, array{string, string}>
+     */
+    public static function prettyVersions(): array
+    {
+        return [
+            'a release tag keeps its version' => ['1.4.2', '1.4.2'],
+            'the tag prefix is stripped' => ['v1.4.2', '1.4.2'],
+            'a pre-release is a real version' => ['v2.0.0-rc.1', '2.0.0-rc.1'],
+            'a branch checkout is not a version' => ['dev-main', '0.0.0'],
+            'nor is any other branch' => ['dev-feature/scheduled', '0.0.0'],
+            'nor is a git-less install' => ['1.0.0+no-version-set', '0.0.0'],
+            'nor is nothing at all' => ['', '0.0.0'],
+        ];
+    }
+
+    #[DataProvider('prettyVersions')]
+    public function testANonReleaseVersionDegradesToThePlaceholder(string $pretty, string $expected): void
+    {
+        self::assertSame($expected, Config::normalizeVersion($pretty));
     }
 
     public function testARelativePathIsJoinedOntoTheBaseUrl(): void

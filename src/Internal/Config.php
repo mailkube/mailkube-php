@@ -17,6 +17,11 @@ final class Config
 {
     public const DEFAULT_BASE_URL = 'https://api.mailkube.com/mta/v1/';
 
+    /**
+     * Reported when the package is not running from a released artifact.
+     */
+    public const PLACEHOLDER_VERSION = '0.0.0';
+
     private const PACKAGE = 'mailkube/mailkube-php';
 
     public readonly string $apiKey;
@@ -79,19 +84,35 @@ final class Config
     }
 
     /**
-     * Return this package's installed version, or a placeholder outside a Composer install.
-     *
-     * The leading `v` is stripped. Releases are tagged `vX.Y.Z` (`tagFormat` in `.releaserc.json`),
-     * and Composer records the tag's pretty form verbatim, so without this the User-Agent would
-     * read `mailkube-php/v1.0.0` and break the contract's `mailkube-<lang>/<version>` shape.
+     * Return this package's released version, or a placeholder outside a released install.
      */
     public static function version(): string
     {
         if (!InstalledVersions::isInstalled(self::PACKAGE)) {
-            return '0.0.0';
+            return self::PLACEHOLDER_VERSION;
         }
 
-        return ltrim(InstalledVersions::getPrettyVersion(self::PACKAGE) ?? '0.0.0', 'vV');
+        return self::normalizeVersion(InstalledVersions::getPrettyVersion(self::PACKAGE) ?? '');
+    }
+
+    /**
+     * Reduce Composer's pretty version to a release version, or to the placeholder.
+     *
+     * Two things arrive here that are not versions. Releases are tagged `vX.Y.Z` (`tagFormat` in
+     * `.releaserc.json`) and Composer records the tag's pretty form verbatim, so the leading `v`
+     * has to go or the User-Agent reads `mailkube-php/v1.0.0` and breaks the contract's
+     * `mailkube-<lang>/<version>` shape. And outside a released artifact Composer derives the
+     * version from the checkout instead: `dev-main` on a branch, `1.0.0+no-version-set` with no
+     * git metadata at all. Reporting either one would put a string that is not a version on the
+     * wire, so both degrade to the placeholder. A pre-release suffix is kept: it is a real version.
+     */
+    public static function normalizeVersion(string $pretty): string
+    {
+        $version = ltrim($pretty, 'vV');
+        $isRelease = preg_match('/^\d+\.\d+\.\d+/', $version) === 1
+            && !str_contains($version, '+no-version-set');
+
+        return $isRelease ? $version : self::PLACEHOLDER_VERSION;
     }
 
     /**
