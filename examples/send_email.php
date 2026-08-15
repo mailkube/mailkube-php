@@ -19,8 +19,8 @@ use Mailkube\Client;
 
 // The verified sender this account may send from, and where to send it. Override per
 // environment; the fallbacks are placeholders and will be rejected until you set your own.
-$sender = getenv('MAILKUBE_FROM') ?: 'Acme <hello@yourdomain.com>';
-$to = getenv('MAILKUBE_TO') ?: 'customer@example.com';
+$sender = ($e = getenv('MAILKUBE_FROM')) === false || $e === '' ? 'Acme <hello@yourdomain.com>' : $e;
+$to = ($e = getenv('MAILKUBE_TO')) === false || $e === '' ? 'customer@example.com' : $e;
 
 $client = new Client();
 

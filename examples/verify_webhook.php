@@ -30,6 +30,7 @@ if ($paths === []) {
 $failures = 0;
 
 foreach ($paths as $path) {
+    /** @var array{body: string, headers: array<string, string>, secret: string, name?: string, must_verify?: bool} $fixture */
     $fixture = json_decode((string) file_get_contents($path), true, flags: JSON_THROW_ON_ERROR);
 
     $verified = false;
@@ -46,7 +47,7 @@ foreach ($paths as $path) {
     $ok = $verified === $expected;
     $failures += $ok ? 0 : 1;
     printf(
-        "%s %s: %s (expected %s) %s%s",
+        '%s %s: %s (expected %s) %s%s',
         $ok ? 'ok  ' : 'BAD ',
         $fixture['name'] ?? $path,
         $verified ? 'verified' : 'rejected',

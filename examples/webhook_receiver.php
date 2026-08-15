@@ -24,6 +24,7 @@ use Mailkube\Webhooks;
 // Verify against the RAW received bytes. Decoding and re-encoding changes them and the
 // signature will not match.
 $raw = (string) file_get_contents('php://input');
+/** @var array<string, string> $headers */
 $headers = function_exists('getallheaders') ? getallheaders() : [];
 $secret = (string) getenv('MAILKUBE_WEBHOOK_SECRET');
 

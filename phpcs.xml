@@ -3,6 +3,9 @@
     <description>Documentation gate (#4): public API must be documented and fully type-hinted.</description>
 
     <file>src</file>
+    <!-- Examples are copied by customers, so they are held to the same documentation and
+         type-hint rules as src/. -->
+    <file>examples</file>
     <exclude-pattern>*/vendor/*</exclude-pattern>
     <exclude-pattern>*/tests/*</exclude-pattern>
 

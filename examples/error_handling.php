@@ -23,8 +23,8 @@ use Mailkube\Exception\ApiException;
 
 // The verified sender this account may send from, and where to send it. Override per
 // environment; the fallbacks are placeholders and will be rejected until you set your own.
-$sender = getenv('MAILKUBE_FROM') ?: 'Acme <hello@yourdomain.com>';
-$to = getenv('MAILKUBE_TO') ?: 'customer@example.com';
+$sender = ($e = getenv('MAILKUBE_FROM')) === false || $e === '' ? 'Acme <hello@yourdomain.com>' : $e;
+$to = ($e = getenv('MAILKUBE_TO')) === false || $e === '' ? 'customer@example.com' : $e;
 
 $client = new Client();
 $failures = 0;
@@ -35,11 +35,11 @@ $expect = static function (string $label, ErrorName $expected, callable $run) us
     } catch (ApiException $e) {
         $ok = $e->errorName === $expected->value;
         $failures += $ok ? 0 : 1;
-        printf("%s %s: %s (%d)%s", $ok ? 'ok  ' : 'BAD ', $label, $e->errorName, $e->statusCode, PHP_EOL);
+        printf('%s %s: %s (%d)%s', $ok ? 'ok  ' : 'BAD ', $label, $e->errorName, $e->statusCode, PHP_EOL);
 
         return;
     }
-    printf("BAD  %s: expected %s, but the call succeeded%s", $label, $expected->value, PHP_EOL);
+    printf('BAD  %s: expected %s, but the call succeeded%s', $label, $expected->value, PHP_EOL);
     ++$failures;
 };
 
