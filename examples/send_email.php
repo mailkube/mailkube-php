@@ -17,11 +17,16 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use Mailkube\Client;
 
+// The verified sender this account may send from, and where to send it. Override per
+// environment; the fallbacks are placeholders and will be rejected until you set your own.
+$sender = getenv('MAILKUBE_FROM') ?: 'Acme <hello@yourdomain.com>';
+$to = getenv('MAILKUBE_TO') ?: 'customer@example.com';
+
 $client = new Client();
 
 $email = $client->emails->send(
-    from: 'Acme <hello@yourdomain.com>',
-    to: 'customer@example.com',
+    from: $sender,
+    to: $to,
     subject: 'Hello world',
     html: '<p>It works!</p>',
 );

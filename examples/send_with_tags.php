@@ -13,11 +13,16 @@ require __DIR__ . '/../vendor/autoload.php';
 use Mailkube\Client;
 use Mailkube\Model\Tag;
 
+// The verified sender this account may send from, and where to send it. Override per
+// environment; the fallbacks are placeholders and will be rejected until you set your own.
+$sender = getenv('MAILKUBE_FROM') ?: 'Acme <hello@yourdomain.com>';
+$to = getenv('MAILKUBE_TO') ?: 'customer@example.com';
+
 $client = new Client();
 
 $email = $client->emails->send(
-    from: 'Acme <hello@yourdomain.com>',
-    to: 'customer@example.com',
+    from: $sender,
+    to: $to,
     subject: 'Welcome aboard',
     html: '<p>Glad you are here.</p>',
     // Names and values are limited server-side to [A-Za-z0-9_-], 16 and 32 characters, 20 tags
