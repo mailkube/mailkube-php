@@ -28,13 +28,20 @@ final class Config
 
     public readonly string $baseUrl;
 
+    /** The caller-supplied User-Agent token, already validated; empty when there is none. */
+    public readonly string $userAgentSuffix;
+
     /**
      * Resolve configuration from explicit arguments, then the environment, then the defaults.
      *
      * @throws MailkubeException If no API key is provided or found in the environment.
      */
-    public function __construct(?string $apiKey = null, ?string $baseUrl = null, public readonly float $timeout = 30.0)
-    {
+    public function __construct(
+        ?string $apiKey = null,
+        ?string $baseUrl = null,
+        public readonly float $timeout = 30.0,
+        ?string $userAgentSuffix = null,
+    ) {
         $resolvedKey = $apiKey ?? self::env('MAILKUBE_API_KEY');
         if ($resolvedKey === null || $resolvedKey === '') {
             throw new MailkubeException(
@@ -43,6 +50,10 @@ final class Config
         }
         $this->apiKey = $resolvedKey;
         $this->baseUrl = $baseUrl ?? self::env('MAILKUBE_BASE_URL') ?? self::DEFAULT_BASE_URL;
+        $suffix = trim($userAgentSuffix ?? '');
+        // Dropped rather than sanitized: a header value that could split the request is not one
+        // this package will send, and silently repairing it hides the caller's bug.
+        $this->userAgentSuffix = preg_match('/[\r\n]/', $suffix) === 1 ? '' : $suffix;
     }
 
     /**
@@ -58,7 +69,7 @@ final class Config
     {
         return [
             'Authorization' => 'Bearer ' . $this->apiKey,
-            'User-Agent' => 'mailkube-php/' . self::version(),
+            'User-Agent' => $this->userAgent(),
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
         ];
@@ -113,6 +124,19 @@ final class Config
             && !str_contains($version, '+no-version-set');
 
         return $isRelease ? $version : self::PLACEHOLDER_VERSION;
+    }
+
+    /**
+     * Return this SDK's token, plus any suffix a wrapping tool supplied.
+     *
+     * The SDK token always leads, so attribution of the SDK itself never depends on what the
+     * wrapper chose to call itself.
+     */
+    private function userAgent(): string
+    {
+        $agent = 'mailkube-php/' . self::version();
+
+        return $this->userAgentSuffix === '' ? $agent : $agent . ' ' . $this->userAgentSuffix;
     }
 
     /**

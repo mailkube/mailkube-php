@@ -31,6 +31,9 @@ use Mailkube\Exception\SignatureVerificationException;
  *     suppress($event->data->bounce->recipient, $event->data->bounce->reason);
  * }
  * ```
+ *
+ * {@see self::sign()} is the mirror, for anything that has to produce a delivery rather than
+ * consume one.
  */
 final class Webhooks
 {
@@ -64,7 +67,7 @@ final class Webhooks
 
         self::checkFreshness($timestamp, $toleranceSeconds);
 
-        $expected = hash_hmac('sha256', "{$id}.{$timestamp}." . $payload, $secret);
+        $expected = self::signatureHex($id, $timestamp, $payload, $secret);
         $provided = str_starts_with($signature, self::SIGNATURE_PREFIX)
             ? substr($signature, strlen(self::SIGNATURE_PREFIX))
             : $signature;
@@ -74,6 +77,30 @@ final class Webhooks
         }
 
         return $payload;
+    }
+
+    /**
+     * Produce the ``X-Webhook-Sig`` value for a payload, the mirror of {@see self::verifySignature()}.
+     *
+     * This exists so anything that produces a delivery — a test fixture, a local replay tool, a
+     * fake endpoint in your own suite — computes the signature the way this class verifies it.
+     * A reimplementation from the docblock above agrees with its author's reading of the prose
+     * rather than with this SDK, and the two drift silently. Production code verifies; it does
+     * not sign.
+     *
+     * Freshness is not this method's concern: it signs the timestamp it is given, so replaying
+     * an old capture reproduces the original signature exactly.
+     *
+     * @param string $id        The ``X-Webhook-Id`` value.
+     * @param string $timestamp The ``X-Webhook-Ts`` value, ISO-8601.
+     * @param string $payload   The raw body that will be sent.
+     * @param string $secret    The endpoint's signing secret.
+     *
+     * @return string The header value, including the ``sha256=`` prefix.
+     */
+    public static function sign(string $id, string $timestamp, string $payload, string $secret): string
+    {
+        return self::SIGNATURE_PREFIX . self::signatureHex($id, $timestamp, $payload, $secret);
     }
 
     /**
@@ -105,6 +132,16 @@ final class Webhooks
         int $toleranceSeconds = self::DEFAULT_TOLERANCE_SECONDS,
     ): WebhookEvent {
         return self::parseEvent(self::verifySignature($payload, $headers, $secret, $toleranceSeconds));
+    }
+
+    /**
+     * Return the hex HMAC-SHA256 over the contract's signed input.
+     *
+     * One implementation, so signing and verifying cannot disagree.
+     */
+    private static function signatureHex(string $id, string $timestamp, string $payload, string $secret): string
+    {
+        return hash_hmac('sha256', "{$id}.{$timestamp}." . $payload, $secret);
     }
 
     /**

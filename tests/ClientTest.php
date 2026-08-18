@@ -52,6 +52,20 @@ final class ClientTest extends TestCase
         self::assertStringStartsWith('mailkube-php/', $request->getHeaderLine('User-Agent'));
     }
 
+    public function testAUserAgentSuffixReachesTheWire(): void
+    {
+        // The suffix is the last constructor parameter here, after $logger, so the pass-through
+        // position is worth pinning: ConfigTest proves the format, this proves the wiring.
+        $this->queue();
+
+        $this->clientOverQueue(userAgentSuffix: 'my-cli/1.0.0')
+            ->emails->send(from: 'a@x.com', to: 'b@y.com', subject: 'Hi');
+
+        $agent = $this->sentRequest()->getHeaderLine('User-Agent');
+        self::assertStringStartsWith('mailkube-php/', $agent);
+        self::assertStringEndsWith(' my-cli/1.0.0', $agent);
+    }
+
     public function testOptionalFieldsAreOmittedRatherThanSentAsNull(): void
     {
         $this->client()->emails->send(from: 'a@x.com', to: 'b@y.com', subject: 'Hi');

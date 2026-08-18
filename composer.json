@@ -48,7 +48,7 @@
     "format:check": "php-cs-fixer fix --dry-run --diff",
     "cs": "phpcs",
     "analyse": "phpstan analyse",
-    "mess": "phpmd src text phpmd.xml",
+    "mess": "phpmd src,examples text phpmd.xml",
     "test": "phpunit"
   },
   "config": {

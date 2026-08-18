@@ -61,6 +61,49 @@ final class ConfigTest extends BaseTestCase
         self::assertSame('mailkube-php/' . Config::version(), $agent);
     }
 
+    public function testAUserAgentSuffixFollowsTheSdkToken(): void
+    {
+        // A wrapping tool gets attribution without hiding which SDK made the call.
+        $config = new Config('mk_test', null, 30.0, 'my-cli/1.0.0');
+
+        self::assertSame(
+            'mailkube-php/' . Config::version() . ' my-cli/1.0.0',
+            $config->defaultHeaders()['User-Agent'],
+        );
+    }
+
+    /**
+     * @phpstan-return array<string, array{string}>
+     */
+    public static function unusableSuffixes(): array
+    {
+        return [
+            'empty' => [''],
+            'blank' => ['   '],
+            'newline' => ["cli/1.0\ninjected: yes"],
+            'carriage' => ["cli/1.0\rinjected: yes"],
+        ];
+    }
+
+    #[DataProvider('unusableSuffixes')]
+    public function testAnUnusableUserAgentSuffixLeavesTheHeaderUntouched(string $suffix): void
+    {
+        // Blank is a no-op; CR/LF is dropped rather than cleaned, so nothing can split the header.
+        $config = new Config('mk_test', null, 30.0, $suffix);
+
+        self::assertSame(
+            'mailkube-php/' . Config::version(),
+            $config->defaultHeaders()['User-Agent'],
+        );
+    }
+
+    public function testASurroundingSpaceInTheUserAgentSuffixIsTrimmed(): void
+    {
+        $config = new Config('mk_test', null, 30.0, '  my-cli/1.0.0  ');
+
+        self::assertStringEndsWith(' my-cli/1.0.0', $config->defaultHeaders()['User-Agent']);
+    }
+
     public function testTheReportedVersionIsNeverAPrefixedOrDerivedString(): void
     {
         // Whatever the checkout, what reaches the wire looks like a version. Asserting against

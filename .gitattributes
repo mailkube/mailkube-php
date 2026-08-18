@@ -19,6 +19,7 @@
 /phpunit.xml.dist          export-ignore
 /.php-cs-fixer.dist.php    export-ignore
 /.jscpd.json               export-ignore
+/.jscpd.examples.json      export-ignore
 /.pre-commit-config.yaml   export-ignore
 /.releaserc.json           export-ignore
 /commitlint.config.js      export-ignore

@@ -12,6 +12,11 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use Mailkube\Client;
 
+// The verified sender this account may send from, and where to send it. Override per
+// environment; the fallbacks are placeholders and will be rejected until you set your own.
+$sender = ($e = getenv('MAILKUBE_FROM')) === false || $e === '' ? 'Acme <hello@yourdomain.com>' : $e;
+$to = ($e = getenv('MAILKUBE_TO')) === false || $e === '' ? 'customer@example.com' : $e;
+
 $client = new Client();
 $batch = 'trial-reminders';
 $due = new DateTimeImmutable('+2 days');
@@ -19,7 +24,7 @@ $due = new DateTimeImmutable('+2 days');
 foreach (['a@example.com', 'b@example.com', 'c@example.com'] as $recipient) {
     // batchId is only valid alongside scheduledAt.
     $client->emails->send(
-        from: 'Acme <hello@yourdomain.com>',
+        from: $sender,
         to: $recipient,
         subject: 'Your trial ends soon',
         html: '<p>Renew any time.</p>',

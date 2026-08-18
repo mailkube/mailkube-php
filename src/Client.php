@@ -43,6 +43,10 @@ use Psr\Log\NullLogger;
  * **Logging is silent by default.** Pass a PSR-3 `$logger`, or set `MAILKUBE_LOG` to a level. See
  * {@see Logging}.
  *
+ * **Software that wraps this SDK should identify itself** through `$userAgentSuffix`, so requests
+ * made through a CLI, a framework integration or an internal service are distinguishable from
+ * direct use. This SDK's own token always leads.
+ *
  * There are deliberately **no built-in retries**. A rate-limit error carries its retry-after
  * value and a server error is documented as safe to retry, so the calling application decides.
  * Pass an idempotency key to make a retry safe.
@@ -58,6 +62,10 @@ final class Client
     /**
      * Create the client, resolving configuration and wiring the transport.
      *
+     * @phpstan-param string|null $userAgentSuffix A `name/version` token identifying software that
+     *     wraps this SDK — a CLI, an internal service, a framework integration — appended after
+     *     this SDK's own token. A value containing CR or LF is ignored.
+     *
      * @throws MailkubeException If no API key is provided or found in the environment, or if no
      *                           PSR-18 client / PSR-17 factory is installed and none was passed.
      */
@@ -69,9 +77,10 @@ final class Client
         ?RequestFactoryInterface $requestFactory = null,
         ?StreamFactoryInterface $streamFactory = null,
         ?LoggerInterface $logger = null,
+        ?string $userAgentSuffix = null,
     ) {
         $transport = Wiring::transport(
-            new Config($apiKey, $baseUrl, $timeout),
+            new Config($apiKey, $baseUrl, $timeout, $userAgentSuffix),
             $httpClient,
             $requestFactory,
             $streamFactory,

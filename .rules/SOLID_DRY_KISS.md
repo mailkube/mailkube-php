@@ -8,7 +8,8 @@ thresholds and how to satisfy each gate locally *before* pushing.
 | Gate | Rule | Enforced by |
 |---|---|---|
 | **Coverage** | ≥ 90% line | `phpunit --coverage-clover` + `scripts/check-coverage.sh` (the `test` CI job) |
-| **DRY** | ≤ 1% duplicated code | `jscpd` (the `dry` CI job) |
+| **DRY** | ≤ 1% duplicated code | `jscpd` (the `dry` CI job) — `src/` at `minTokens: 50`, `examples/` at 100 |
+| **Examples parse** | every `examples/*.php` is valid PHP | `php -l` (the `examples` CI job) |
 | **KISS** | cyclomatic complexity ≤ 10 per unit | `phpmd` `codesize` ruleset (the `test` CI job) |
 | **Documentation** | every class + public method has a docblock | `phpcs` (`Squiz.Commenting.*`) + slevomat type hints |
 | **SOLID** | see below — approximated by analysis + review | `phpmd` `design`/`unusedcode` + phpstan strict + PR checklist |
@@ -29,10 +30,24 @@ composer mess                                          # complexity (KISS) + des
 composer test -- --coverage-clover=coverage.clover     # tests + coverage report
 ./scripts/check-coverage.sh coverage.clover            # 90% coverage gate
 npx --yes jscpd@4 --config .jscpd.json .               # duplication (DRY) gate
+npx --yes jscpd@4 --config .jscpd.examples.json examples/  # the same gate over examples/
+for f in examples/*.php; do php -l "$f" || exit 1; done   # every example parses
 ./scripts/check-rule-index.sh                          # every .rules/*.md indexed in AGENTS.md
 ```
 
 `pre-commit run --all-files` runs the php-cs-fixer + phpcs + phpstan + phpmd + jscpd hooks in one shot.
+
+**`examples/` is in scope for php-cs-fixer, phpcs, phpstan and phpmd.** It is runnable
+documentation, which is the reason, not an exception to it: customers copy those files, and every
+defect the SDK certification run surfaced lived there because no gate looked at it. Two carve-outs
+remain, each for a reason:
+
+- **Duplication** is measured by a *separate* pass, `.jscpd.examples.json`, at `minTokens: 100`
+  instead of 50. Every example repeats the same opening — require the autoloader, read
+  `MAILKUBE_FROM`, construct the client — and hoisting that into a shared helper would make each
+  file unreadable on its own, which is the one thing an example must be. 100 clears that
+  scaffolding (measured: the cliff is at 90) and still fails on a copy-pasted example.
+- **Coverage** excludes them, because nothing in CI executes them: they need live credentials.
 
 ## SOLID, concretely (paradigm-neutral guidance)
 

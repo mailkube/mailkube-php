@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 // Formatting gate (#7): PSR-12 plus a few strictness rules. Run `composer format` to apply.
 $finder = PhpCsFixer\Finder::create()
-    ->in([__DIR__ . '/src', __DIR__ . '/tests']);
+    ->in([__DIR__ . '/src', __DIR__ . '/tests', __DIR__ . '/examples']);
 
 return (new PhpCsFixer\Config())
     ->setRiskyAllowed(true)

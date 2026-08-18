@@ -3,7 +3,10 @@
 /**
  * Send a saved template instead of raw content.
  *
- *     MAILKUBE_API_KEY=mk_... php examples/send_with_template.php
+ *     MAILKUBE_API_KEY=mk_... php examples/send_with_template.php <template-uuid>
+ *
+ * The template must exist on the sending domain and be published — a draft or deleted one is a
+ * `template_not_found`.
  */
 
 declare(strict_types=1);
@@ -12,14 +15,25 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use Mailkube\Client;
 
+// The verified sender this account may send from, and where to send it. Override per
+// environment; the fallbacks are placeholders and will be rejected until you set your own.
+$sender = ($e = getenv('MAILKUBE_FROM')) === false || $e === '' ? 'Acme <hello@yourdomain.com>' : $e;
+$to = ($e = getenv('MAILKUBE_TO')) === false || $e === '' ? 'customer@example.com' : $e;
+
+$templateId = $argv[1] ?? getenv('MAILKUBE_TEMPLATE_ID');
+if ($templateId === false || $templateId === '') {
+    fwrite(STDERR, "usage: php examples/send_with_template.php <template-uuid>\n");
+    exit(2);
+}
+
 $client = new Client();
 
 $email = $client->emails->send(
-    from: 'Acme <hello@yourdomain.com>',
-    to: 'customer@example.com',
+    from: $sender,
+    to: $to,
     subject: 'Welcome aboard',
     // A send carries EITHER raw content (html/text) or a template, never both.
-    templateId: '00000000-0000-4000-8000-000000000000',
+    templateId: $templateId,
     templateVersion: 'latest',
     variables: ['first_name' => 'Ada', 'plan' => 'Pro'],
 );
