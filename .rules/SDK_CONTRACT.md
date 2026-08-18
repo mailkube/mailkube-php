@@ -24,7 +24,7 @@ Identical in every SDK. A caller who learns one SDK knows them all.
 | Timeout | 30 seconds, configured per client, not per call |
 | Retries | **None.** See below |
 | Idempotency | an `idempotency_key` parameter lifts out of the body into an `Idempotency-Key` header; the response reports whether the request was replayed |
-| User-Agent | `mailkube-<lang>/<version>` |
+| User-Agent | `mailkube-<lang>/<version>`, optionally followed by a caller-supplied suffix |
 | Request id | read `X-Request-Id` off every response and attach it to errors |
 
 **The version has exactly one source of truth, and the User-Agent reads that source.** What counts
@@ -37,6 +37,18 @@ User-Agent then reports a version that was never released.
 Where the metadata route can legitimately return nothing — a package running from a build tree
 rather than an installed artifact, which is the normal case in tests and IDEs — fall back to a
 documented placeholder such as `0.0.0` rather than failing or emitting an empty version.
+
+**Every client takes a User-Agent suffix**, so software that wraps the SDK can be attributed. A
+CLI, an internal service and a framework integration all send requests the server sees as coming
+from the SDK; without a suffix, none of them is distinguishable from direct use.
+
+- The contract token stays **leading and unchanged**. The suffix is appended after a single space:
+  `mailkube-go/1.1.0 mailkube-cli/1.0.0`.
+- Ask for the conventional `name/version` form, and trim surrounding whitespace.
+- **A value containing CR or LF is ignored, not sanitized.** A header value that could be split is
+  not a value the SDK should send at all, and silently repairing it hides the caller's bug.
+
+A framework integration built on an SDK **must** set it to its own `name/version`.
 
 **There are no built-in retries.** Surface what the caller needs to decide for themselves: the
 retry-after value on a rate-limit error, and a server-error class documented as safe to retry with

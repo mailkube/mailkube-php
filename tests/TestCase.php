@@ -64,7 +64,7 @@ abstract class TestCase extends BaseTestCase
     /**
      * Build a client over whatever is already queued, adding nothing.
      */
-    protected function clientOverQueue(?LoggerInterface $logger = null): Client
+    protected function clientOverQueue(?LoggerInterface $logger = null, ?string $userAgentSuffix = null): Client
     {
         $factory = new Psr17Factory();
 
@@ -74,6 +74,7 @@ abstract class TestCase extends BaseTestCase
             requestFactory: $factory,
             streamFactory: $factory,
             logger: $logger,
+            userAgentSuffix: $userAgentSuffix,
         );
     }
 

@@ -56,6 +56,13 @@ $client = new Client(httpClient: $myPsr18Client, requestFactory: $f, streamFacto
 | Base URL | `baseUrl:` | `MAILKUBE_BASE_URL` | `https://api.mailkube.com/mta/v1/` |
 | Timeout | `timeout:` | | 30 seconds |
 | Logger | `logger:` (PSR-3) | `MAILKUBE_LOG` | silent |
+| User-Agent suffix | `userAgentSuffix:` | | none |
+
+**About the User-Agent suffix.** If your code wraps this SDK — a CLI, an internal service, a
+framework integration — pass a `name/version` token and it is appended to the SDK's own, after a
+single space: `mailkube-php/1.1.0 mailkube-laravel/0.1.0`. This SDK's token always leads.
+Surrounding whitespace is trimmed, and a value containing CR or LF is **ignored** rather than
+cleaned up, because a header value that could split the request is not one this package will send.
 
 **About the timeout.** PSR-18 exposes no timeout API, so the value can only reach a concrete
 client. Pass no `httpClient:` and the SDK builds a Guzzle or Symfony client carrying it. Inject
@@ -194,6 +201,17 @@ if ($event instanceof EmailClickedEvent) {
 
 `Webhooks::verifySignature()` returns the raw bytes if you would rather decode them yourself, and
 `Webhooks::parseEvent()` parses without verifying (useful in tests).
+
+`Webhooks::sign()` is the mirror, so your own tests can build a valid request without reimplementing
+the HMAC from this page:
+
+```php
+$timestamp = gmdate('c');
+$signature = Webhooks::sign('wh_1', $timestamp, $body, $signingSecret);
+```
+
+See `examples/sign_webhook.php`, which signs a delivery and prints a fixture that
+`examples/verify_webhook.php` reads back.
 
 ### Event types
 
