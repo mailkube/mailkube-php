@@ -30,5 +30,6 @@ Packagist as `mailkube/mailkube-php`. Load the relevant rule file from `.rules/`
 - **Conventional Commits** for PR titles (squash-merged); only `feat:`/`fix:`/`perf:` cut a release.
 - **No secrets in the repo** — local config lives in a git-ignored `.env`, excluded from the built image.
 - **Releases are git tags** — Packagist ingests `vX.Y.Z` via its GitHub service hook; there is no publish step.
+- **Keep the `README` current** with user-visible changes: it is the only reference this package publishes.
 - **Releases commit nothing to `main`** — the git tag is the version, and the GitHub Release
   notes are the changelog; there is no `CHANGELOG.md` (see `.rules/RELEASE.md`).

@@ -287,8 +287,10 @@ final class WebhookEventsTest extends BaseTestCase
 
     public function testAnEngagementBlockWithoutIpAddressOrUserAgentStillParses(): void
     {
-        // The platform stopped recording both, so a current server sends neither key. A released
-        // client must never raise on a payload it has not seen.
+        // The three connection fields are elected per sending domain and off by default, so the
+        // server omits their keys on most events. ipAddress and userAgent read as empty strings
+        // because they predate the election and stayed non-nullable; country is nullable, so on
+        // that field alone this client can tell "not elected" from "elected but blank".
         $payload = self::payloads()['email.opened'];
         $payload['open'] = ['timestamp' => '2026-08-13T10:00:00Z'];
 
@@ -297,7 +299,26 @@ final class WebhookEventsTest extends BaseTestCase
         self::assertInstanceOf(EmailOpenedEvent::class, $opened);
         self::assertSame('', $opened->data->open->ipAddress);
         self::assertSame('', $opened->data->open->userAgent);
+        self::assertNull($opened->data->open->country);
         self::assertSame('2026-08-13T10:00:00Z', $opened->data->open->timestamp);
+    }
+
+    public function testAnElectedCountryIsReadAlongsideTheAddress(): void
+    {
+        $payload = self::payloads()['email.opened'];
+        $payload['open'] = [
+            'timestamp' => '2026-08-13T10:00:00Z',
+            'ipAddress' => '203.0.113.7',
+            'country' => 'FR',
+        ];
+
+        $opened = Webhooks::parseEvent(self::body('email.opened', $payload));
+
+        self::assertInstanceOf(EmailOpenedEvent::class, $opened);
+        self::assertSame('203.0.113.7', $opened->data->open->ipAddress);
+        self::assertSame('FR', $opened->data->open->country);
+        // Elected separately, so it stays unset even though the address was recorded.
+        self::assertSame('', $opened->data->open->userAgent);
     }
 
     public function testTheDomainStatusPreviousBlockIsRead(): void
