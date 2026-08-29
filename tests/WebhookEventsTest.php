@@ -285,6 +285,21 @@ final class WebhookEventsTest extends BaseTestCase
         self::assertSame('1.2.3.4', $clicked->data->click->ipAddress);
     }
 
+    public function testAnEngagementBlockWithoutIpAddressOrUserAgentStillParses(): void
+    {
+        // The platform stopped recording both, so a current server sends neither key. A released
+        // client must never raise on a payload it has not seen.
+        $payload = self::payloads()['email.opened'];
+        $payload['open'] = ['timestamp' => '2026-08-13T10:00:00Z'];
+
+        $opened = Webhooks::parseEvent(self::body('email.opened', $payload));
+
+        self::assertInstanceOf(EmailOpenedEvent::class, $opened);
+        self::assertSame('', $opened->data->open->ipAddress);
+        self::assertSame('', $opened->data->open->userAgent);
+        self::assertSame('2026-08-13T10:00:00Z', $opened->data->open->timestamp);
+    }
+
     public function testTheDomainStatusPreviousBlockIsRead(): void
     {
         $event = Webhooks::parseEvent(self::body('domain.status', self::payloads()['domain.status']));

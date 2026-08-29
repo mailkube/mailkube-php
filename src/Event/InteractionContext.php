@@ -17,6 +17,11 @@ abstract class InteractionContext
 {
     /**
      * Describe one interaction.
+     *
+     * @deprecated 1.2.0 `$ipAddress` and `$userAgent` are no longer recorded by the platform, so a
+     *             current server omits both wire keys and these read as empty strings. They are
+     *             kept rather than removed so that code written against an earlier version still
+     *             runs, and so an event replayed from an archive still parses.
      */
     public function __construct(
         public readonly string $ipAddress,
