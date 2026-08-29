@@ -21,7 +21,20 @@ require __DIR__ . '/../vendor/autoload.php';
 use Mailkube\Exception\SignatureVerificationException;
 use Mailkube\Webhooks;
 
-$paths = array_slice($argv, 1);
+// `$argv` exists only when register_argc_argv is on, which is the CLI default but not a guarantee,
+// so read the arguments off `$_SERVER` and narrow them rather than assuming either. The sibling
+// examples get away with `$argv[1] ?? ...` because the null-coalesce guards the access; slicing
+// does not.
+$argument_values = $_SERVER['argv'] ?? [];
+$paths = [];
+if (is_array($argument_values)) {
+    foreach (array_slice($argument_values, 1) as $argument) {
+        if (is_string($argument)) {
+            $paths[] = $argument;
+        }
+    }
+}
+
 if ($paths === []) {
     fwrite(STDERR, "usage: php examples/verify_webhook.php <fixture.json> [more.json...]\n");
     exit(2);

@@ -19,8 +19,9 @@ final class ClickContext extends InteractionContext
         string $userAgent,
         string $timestamp,
         public readonly string $link,
+        ?string $country = null,
     ) {
-        parent::__construct($ipAddress, $userAgent, $timestamp);
+        parent::__construct($ipAddress, $userAgent, $timestamp, $country);
     }
 
     /**

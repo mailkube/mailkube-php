@@ -233,6 +233,13 @@ See `examples/sign_webhook.php`, which signs a delivery and prints a fixture tha
 receiving server took it. `email.failed` means it was dropped at dispatch and never transmitted,
 which is why it carries no recipient, unlike `email.bounced`.
 
+On the `open` and `click` blocks, `ipAddress`, `country` and `userAgent` are recorded only where the
+sending domain has elected them, and both settings are off by default. The server omits the key
+rather than sending an empty value. `$country` is `null` when it was not recorded, while
+`$ipAddress` and `$userAgent` stay non-nullable and read as `''`, so on those two an unelected value
+is indistinguishable from a blank one. `$country` can be `null` even where the address was recorded,
+because it is resolved at the edge and is not available on every path.
+
 An event type this release does not know becomes an `UnknownEvent` rather than an error, and every
 event keeps the whole decoded payload in `$event->raw`, so a receiver that logs or forwards events
 never loses a field. That is deliberate: the server gains event types independently of the SDK.
