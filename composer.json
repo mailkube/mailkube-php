@@ -24,7 +24,7 @@
     "guzzlehttp/guzzle": "^7.9 || ^8.0",
     "nyholm/psr7": "^1.8",
     "php-http/mock-client": "^1.6",
-    "phpmd/phpmd": "^2.15",
+    "phpmd/phpmd": "^2.15 || ^3.0",
     "phpstan/phpstan": "^2.0",
     "phpstan/phpstan-phpunit": "^2.0",
     "phpstan/phpstan-strict-rules": "^2.0",
