@@ -7,6 +7,7 @@ namespace Mailkube;
 use Mailkube\Exception\MailkubeException;
 use Mailkube\Internal\Config;
 use Mailkube\Internal\Wiring;
+use Mailkube\Resource\CredentialResource;
 use Mailkube\Resource\EmailsResource;
 use Mailkube\Resource\ScheduledEmailsResource;
 use Psr\Http\Client\ClientInterface;
@@ -59,6 +60,9 @@ final class Client
     /** The ``scheduledEmails`` namespace, including ``scheduledEmails->batches``. */
     public readonly ScheduledEmailsResource $scheduledEmails;
 
+    /** The ``credential`` namespace: the API key this client authenticates with. */
+    public readonly CredentialResource $credential;
+
     /**
      * Create the client, resolving configuration and wiring the transport.
      *
@@ -89,5 +93,6 @@ final class Client
 
         $this->emails = new EmailsResource($transport);
         $this->scheduledEmails = new ScheduledEmailsResource($transport);
+        $this->credential = new CredentialResource($transport);
     }
 }

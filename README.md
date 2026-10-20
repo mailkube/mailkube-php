@@ -6,7 +6,9 @@
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Code of Conduct](https://img.shields.io/badge/Contributor%20Covenant-2.1-purple.svg)](CODE_OF_CONDUCT.md)
 
-The official PHP SDK for mailkube
+The official PHP SDK for [mailkube](https://mailkube.com).
+
+Full product and API documentation: [docs.mailkube.com/sdks/php](https://docs.mailkube.com/sdks/php).
 
 ## Install
 
@@ -177,6 +179,28 @@ The scheduling rules are **server-enforced and not validated client-side**: the 
 in the future and within your plan's horizon (about 30 days), the list window covers roughly 31
 days around now, and a batch label is at most 64 characters. The horizon and window are
 configurable per environment; the batch-label limit is fixed.
+
+## Your API key
+
+`$client->credential->info()` describes the key the client authenticates with: its domain,
+organization, source-IP allowlist, plan and send-quota usage.
+
+```php
+$key = $client->credential->info();
+echo $key->keyId, ' ', $key->domain->name, ' ', $key->organization->alias, PHP_EOL;
+
+foreach ($key->plan?->quotas ?? [] as $quota) {
+    echo $quota->name, ' ', $quota->used, '/', $quota->limit, ' ', $quota->period, PHP_EOL;
+}
+```
+
+The key is checked exactly as a send checks it, so a key that cannot send raises
+`AuthenticationException` (`invalid_api_key`): calling `info()` is how to verify a key. The call
+counts as a use of the key, and plan and quota figures can be up to 30 seconds old. `plan` is null
+when the organization has no subscription, and a plan without a daily limit lists
+`emails_per_month` only. `remaining` counts recipients, not messages.
+
+The client keeps the key it was constructed with. To use another key, construct another client.
 
 ## Webhooks
 
