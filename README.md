@@ -180,6 +180,28 @@ in the future and within your plan's horizon (about 30 days), the list window co
 days around now, and a batch label is at most 64 characters. The horizon and window are
 configurable per environment; the batch-label limit is fixed.
 
+## Your API key
+
+`$client->credential->info()` describes the key the client authenticates with: its domain,
+organization, source-IP allowlist, plan and send-quota usage.
+
+```php
+$key = $client->credential->info();
+echo $key->keyId, ' ', $key->domain->name, ' ', $key->organization->alias, PHP_EOL;
+
+foreach ($key->plan?->quotas ?? [] as $quota) {
+    echo $quota->name, ' ', $quota->used, '/', $quota->limit, ' ', $quota->period, PHP_EOL;
+}
+```
+
+The key is checked exactly as a send checks it, so a key that cannot send raises
+`AuthenticationException` (`invalid_api_key`): calling `info()` is how to verify a key. The call
+counts as a use of the key, and plan and quota figures can be up to 30 seconds old. `plan` is null
+when the organization has no subscription, and a plan without a daily limit lists
+`emails_per_month` only. `remaining` counts recipients, not messages.
+
+The client keeps the key it was constructed with. To use another key, construct another client.
+
 ## Webhooks
 
 `Webhooks::verify()` checks the signature over the **raw** request body and returns a typed event.
