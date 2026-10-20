@@ -5,7 +5,7 @@
  *
  * Serve it with PHP's built-in server and point an endpoint at it:
  *
- *     MAILKUBE_WEBHOOK_SECRET=whsec_... php -S 127.0.0.1:8080 examples/webhook_receiver.php
+ *     MAILKUBE_WEBHOOK_SECRET=whsec_... php -S 127.0.0.1:8080 examples/webhook_receiver_http.php
  */
 
 declare(strict_types=1);
