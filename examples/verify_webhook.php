@@ -5,7 +5,7 @@
  *
  *     php examples/verify_webhook.php path/to/fixture.json [more.json...]
  *
- * webhook_receiver.php shows verification inside a request handler. This one strips that away: it
+ * webhook_receiver_http.php shows verification inside a request handler. This one strips that away: it
  * feeds captured deliveries straight to Webhooks::verify so you can see exactly what is accepted
  * and what is not. Useful for testing your own handler against saved payloads.
  *

@@ -5,7 +5,7 @@
  *
  * Run with a real key:
  *
- *     MAILKUBE_API_KEY=mk_... php examples/send_email.php
+ *     MAILKUBE_API_KEY=mk_... php examples/simple_send.php
  *
  * Every checklist in .rules/SDK_CONTRACT.md ends with "a README section and a runnable script
  * in examples/". This directory is that home; add one script per verb.
